@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🐸 KATAK CERDAS EKOSISTEM</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;800&display=swap');
+
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary: #FFC107;
+            --sky: #81D4FA;
+            --sky-dark: #4FC3F7;
+            --water: #29B6F6;
+            --water-dark: #0288D1;
+            --text-main: #333;
+            --white: #fff;
+            --danger: #F44336;
+            --rain-bg: rgba(55, 71, 79, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--sky);
+            color: var(--text-main);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, .btn {
+            font-family: 'Fredoka One', cursive;
+        }
+
+        /* --- UI COMPONENTS --- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: scale(0.95);
+            z-index: 10;
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1);
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 6px 0 var(--primary-dark), 0 10px 10px rgba(0,0,0,0.2);
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 var(--primary-dark), 0 4px 4px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(to bottom, var(--secondary), #FFA000);
+            box-shadow: 0 6px 0 #FF8F00, 0 10px 10px rgba(0,0,0,0.2);
+            color: #5D4037;
+        }
+        .btn-secondary:active {
+            box-shadow: 0 0px 0 #FF8F00, 0 4px 4px rgba(0,0,0,0.2);
+        }
+
+        /* --- GLOBAL CONTROLS --- */
+        .global-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .icon-btn {
+            background: rgba(255,255,255,0.8);
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        .icon-btn:hover { transform: scale(1.1); }
+
+        /* --- MAIN MENU --- */
+        #main-menu {
+            background: linear-gradient(to bottom, #E1F5FE, #81D4FA, #4CAF50);
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        .menu-content {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            border: 5px solid white;
+            max-width: 90%;
+            width: 500px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .title-container {
+            margin-bottom: 30px;
+        }
+
+        .title-container h1 {
+            font-size: 2.8rem;
+            color: var(--primary-dark);
+            text-shadow: 2px 2px 0px white, 4px 4px 0px rgba(0,0,0,0.1);
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+
+        .title-container p {
+            font-size: 1.1rem;
+            color: #555;
+            font-weight: 800;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .footer-credits {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: bold;
+        }
+
+        /* --- GAME CONTAINER --- */
+        #game-container {
+            display: flex;
+            flex-direction: row; /* Default split horizontally */
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--sky) 0%, var(--sky-dark) 60%, var(--water) 60%, var(--water-dark) 100%);
+            gap: 2px; /* Split line */
+        }
+
+        /* Player Column Area */
+        .player-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border-left: 2px dashed rgba(255,255,255,0.3);
+            border-right: 2px dashed rgba(255,255,255,0.3);
+            overflow: hidden;
+            transition: background 0.5s;
+        }
+
+        /* Environment Decor */
+        .env-decor {
+            position: absolute;
+            pointer-events: none;
+        }
+        .cloud { top: 10%; width: 60px; opacity: 0.8; animation: floatCloud 10s linear infinite; }
+        .tree { bottom: 35%; right: -20px; width: 100px; z-index: 1;}
+        .grass { bottom: 38%; width: 100%; height: 5vh; background: var(--primary); z-index: 0; }
+
+        /* HUD */
+        .hud {
+            padding: 10px;
+            background: rgba(255,255,255,0.85);
+            border-bottom: 3px solid rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 5;
+        }
+
+        .hud-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: clamp(0.8rem, 2vw, 1.1rem);
+            font-weight: 800;
+        }
+
+        .player-name { color: var(--primary-dark); }
+        .score-box { background: var(--secondary); padding: 2px 10px; border-radius: 15px; color: #5D4037;}
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Game Play Area */
+        .play-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 5%;
+        }
+
+        .question-box {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            border: 3px solid var(--primary);
+            text-align: center;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            font-weight: 800;
+            width: 90%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 5;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .leaves-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(10px, 2vw, 20px);
+            width: 90%;
+            margin-top: clamp(10px, 3vh, 30px);
+            z-index: 5;
+        }
+
+        .leaf-btn {
+            background: transparent;
+            border: none;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: clamp(80px, 15vh, 120px);
+        }
+
+        .leaf-btn:hover { transform: scale(1.05); }
+        .leaf-btn:active { transform: scale(0.95); }
+        .leaf-btn:disabled { cursor: default; transform: none; }
+
+        .leaf-svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+        }
+
+        .leaf-text {
+            position: relative;
+            z-index: 2;
+            color: #fff;
+            font-weight: 800;
+            font-size: clamp(0.8rem, 2vw, 1.1rem);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            text-align: center;
+            padding: 0 10px;
+            pointer-events: none; /* Let clicks pass to btn */
+        }
+
+        /* Frog Character */
+        .frog-container {
+            position: absolute;
+            bottom: 15%; /* Sits on water/grass line */
+            width: clamp(60px, 15vw, 100px);
+            height: clamp(60px, 15vw, 100px);
+            z-index: 6;
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .frog-svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.3));
+        }
+
+        .message-toast {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255,255,255,0.95);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: var(--primary-dark);
+            text-align: center;
+            z-index: 20;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 80%;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+        }
+        .message-toast.show { transform: translate(-50%, -50%) scale(1); }
+
+        /* --- ANIMATIONS & EFFECTS --- */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes floatCloud {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(500%); }
+        }
+        
+        .jump-anim {
+            animation: jumpToLeaf 1s ease-in-out forwards;
+        }
+        @keyframes jumpToLeaf {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(calc(-40vh)) scale(1.2); } /* Jump high */
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        .fall-anim {
+            animation: fallInWater 1.5s ease-in forwards;
+        }
+        @keyframes fallInWater {
+            0% { transform: translateY(0) rotate(0deg); }
+            20% { transform: translateY(-20px) rotate(10deg); }
+            80% { transform: translateY(20vh) rotate(-180deg); opacity: 1;}
+            100% { transform: translateY(25vh) rotate(-180deg); opacity: 0;}
+        }
+
+        /* Weather Effects Overlay */
+        .weather-overlay {
+            position: absolute;
+            top:0; left:0; width:100%; height:100%;
+            pointer-events: none;
+            z-index: 8;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .player-area.raining { background: var(--rain-bg); }
+        .player-area.raining .weather-overlay { opacity: 1; }
+
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 9;
+        }
+
+        /* --- END SCREEN --- */
+        .end-player-card {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        
+        #end-cards-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            flex-wrap: wrap;
+            height: 100%;
+            align-items: center;
+            background: rgba(0,0,0,0.7);
+        }
+
+        @keyframes popIn { to { opacity: 1; transform: scale(1); } }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            background: #f5f5f5;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        /* --- RESPONSIVE ADJUSTMENTS --- */
+        @media (max-width: 768px) {
+            /* On small screens, if portrait and multiplayer, stack vertically */
+            @media (orientation: portrait) {
+                #game-container { flex-direction: column; }
+                .leaves-container { margin-top: 5px; height: 35%;}
+                .leaf-btn { height: auto; padding: 5px;}
+                .question-box { min-height: 50px; padding: 10px;}
+                .frog-container { bottom: 5%; width: 50px; height: 50px;}
+                .grass { bottom: 10%; height: 3vh;}
+            }
+        }
+        
+        /* Utility */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Global Controls -->
+    <div class="global-controls">
+        <button class="icon-btn" id="btn-audio" title="BGM On/Off">🎵</button>
+        <button class="icon-btn" id="btn-fullscreen" title="Fullscreen">🖥️</button>
+        <button class="icon-btn" id="btn-home" title="Home">🏠</button>
+    </div>
+
+    <!-- MAIN MENU -->
+    <div id="main-menu" class="screen active">
+        <div class="menu-content">
+            <div class="title-container">
+                <div style="font-size: 80px; margin-bottom: -10px; animation: float 2s infinite alternate;">🐸</div>
+                <h1>KATAK CERDAS<br>EKOSISTEM</h1>
+                <p>Belajar IPAS Kelas 5 SD Melalui Petualangan Katak</p>
+            </div>
+            <div class="menu-buttons">
+                <button class="btn" onclick="startGame(1)">▶ SOLO MODE (1 Pemain)</button>
+                <button class="btn btn-secondary" onclick="startGame(2)">⚔ DUEL MODE (2 Pemain)</button>
+                <button class="btn btn-secondary" onclick="startGame(3)" style="background: linear-gradient(to bottom, #9C27B0, #7B1FA2); box-shadow: 0 6px 0 #4A148C, 0 10px 10px rgba(0,0,0,0.2); color:white;">👥 TRIPLE MODE (3 Pemain)</button>
+                <button class="btn" onclick="alert('Petunjuk:\nBaca soal di atas layar.\nPilih salah satu daun jawaban yang benar.\nJika benar katak melompat riang, jika salah katak akan jatuh, tapi permainan tetap berlanjut.\nKumpulkan skor tertinggi!')" style="background: #eee; color: #333; box-shadow: 0 6px 0 #ccc;">ℹ Tentang Game</button>
+            </div>
+            <div class="footer-credits">
+                Game Edukasi IPAS Kelas 5 SD<br>Created by Bayu Nugroho
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME AREA -->
+    <div id="game-container" class="screen">
+        <!-- Player columns injected here -->
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen" class="screen">
+        <div id="end-cards-container">
+            <!-- Player end cards injected here -->
+        </div>
+        <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; z-index: 100;">
+            <button class="btn" onclick="goToHome()">🏠 Main Menu</button>
+        </div>
+    </div>
+
+    <!-- ASSETS & LOGIC -->
+    <script>
+        // --- SVG ASSETS (Inline to avoid external requests) ---
+        const svgs = {
+            leaf: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 5 C 80 5, 95 30, 95 50 C 95 70, 70 75, 50 75 C 30 75, 5 70, 5 50 C 5 30, 20 5, 50 5 Z" fill="#66BB6A" stroke="#2E7D32" stroke-width="2"/>
+                <path d="M50 5 C 40 20, 30 40, 50 75" fill="none" stroke="#2E7D32" stroke-width="2" opacity="0.5"/>
+                <path d="M50 30 L 70 20 M 50 45 L 75 35 M 50 60 L 70 55 M 50 30 L 30 20 M 50 45 L 25 35 M 50 60 L 30 55" fill="none" stroke="#2E7D32" stroke-width="1.5" opacity="0.5"/>
+            </svg>`,
+            frogNormal: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Legs -->
+                <ellipse cx="20" cy="80" rx="15" ry="8" fill="#4CAF50" transform="rotate(20 20 80)"/>
+                <ellipse cx="80" cy="80" rx="15" ry="8" fill="#4CAF50" transform="rotate(-20 80 80)"/>
+                <circle cx="15" cy="85" r="5" fill="#388E3C"/><circle cx="25" cy="85" r="5" fill="#388E3C"/>
+                <circle cx="75" cy="85" r="5" fill="#388E3C"/><circle cx="85" cy="85" r="5" fill="#388E3C"/>
+                <!-- Body -->
+                <ellipse cx="50" cy="60" rx="35" ry="30" fill="#4CAF50"/>
+                <ellipse cx="50" cy="65" rx="25" ry="20" fill="#C8E6C9"/> <!-- Belly -->
+                <!-- Head -->
+                <circle cx="50" cy="40" r="30" fill="#4CAF50"/>
+                <!-- Eyes -->
+                <circle cx="30" cy="25" r="12" fill="#4CAF50"/><circle cx="30" cy="25" r="9" fill="#fff"/>
+                <circle cx="70" cy="25" r="12" fill="#4CAF50"/><circle cx="70" cy="25" r="9" fill="#fff"/>
+                <circle cx="30" cy="25" r="4" fill="#000"/><circle cx="70" cy="25" r="4" fill="#000"/>
+                <!-- Mouth -->
+                <path d="M 35 45 Q 50 55 65 45" fill="none" stroke="#388E3C" stroke-width="3" stroke-linecap="round"/>
+            </svg>`,
+            frogHappy: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="20" cy="90" rx="10" ry="20" fill="#4CAF50" transform="rotate(45 20 90)"/>
+                <ellipse cx="80" cy="90" rx="10" ry="20" fill="#4CAF50" transform="rotate(-45 80 90)"/>
+                <ellipse cx="50" cy="55" rx="35" ry="35" fill="#4CAF50"/>
+                <ellipse cx="50" cy="60" rx="25" ry="25" fill="#C8E6C9"/>
+                <circle cx="50" cy="35" r="30" fill="#4CAF50"/>
+                <circle cx="30" cy="20" r="12" fill="#4CAF50"/><circle cx="30" cy="20" r="9" fill="#fff"/>
+                <circle cx="70" cy="20" r="12" fill="#4CAF50"/><circle cx="70" cy="20" r="9" fill="#fff"/>
+                <!-- Happy Eyes -->
+                <path d="M 25 20 Q 30 15 35 20" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+                <path d="M 65 20 Q 70 15 75 20" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+                <!-- Big Mouth -->
+                <path d="M 30 40 Q 50 60 70 40 Z" fill="#D32F2F"/>
+                <path d="M 40 45 Q 50 55 60 45 Z" fill="#FFCDD2"/>
+            </svg>`,
+            frogSad: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="20" cy="80" rx="15" ry="8" fill="#4CAF50" transform="rotate(20 20 80)"/>
+                <ellipse cx="80" cy="80" rx="15" ry="8" fill="#4CAF50" transform="rotate(-20 80 80)"/>
+                <ellipse cx="50" cy="60" rx="35" ry="30" fill="#4CAF50"/>
+                <ellipse cx="50" cy="65" rx="25" ry="20" fill="#C8E6C9"/>
+                <circle cx="50" cy="45" r="30" fill="#4CAF50"/>
+                <circle cx="30" cy="30" r="12" fill="#4CAF50"/><circle cx="30" cy="30" r="9" fill="#fff"/>
+                <circle cx="70" cy="30" r="12" fill="#4CAF50"/><circle cx="70" cy="30" r="9" fill="#fff"/>
+                <circle cx="30" cy="32" r="4" fill="#000"/><circle cx="70" cy="32" r="4" fill="#000"/>
+                <!-- Sad Mouth -->
+                <path d="M 35 60 Q 50 50 65 60" fill="none" stroke="#388E3C" stroke-width="3" stroke-linecap="round"/>
+                <!-- Tears -->
+                <circle cx="25" cy="40" r="3" fill="#81D4FA"/><circle cx="75" cy="40" r="3" fill="#81D4FA"/>
+            </svg>`,
+            cloud: `<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg"><path d="M 20 30 A 15 15 0 0 1 45 20 A 20 20 0 0 1 80 25 A 15 15 0 0 1 85 45 L 20 45 Z" fill="white"/></svg>`,
+            tree: `<svg viewBox="0 0 50 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="50" width="10" height="50" fill="#795548"/><circle cx="25" cy="30" r="25" fill="#2E7D32"/><circle cx="15" cy="40" r="15" fill="#388E3C"/><circle cx="35" cy="40" r="15" fill="#388E3C"/></svg>`
+        };
+
+        // --- QUESTION DATA ---
+        const questionsData = [
+            { q: "🌱 Semua makhluk hidup dan benda tak hidup yang saling berinteraksi disebut ....", opts: ["Populasi", "Komunitas", "Ekosistem", "Habitat"], ans: 2, msg: "Hebat! Katakmu menemukan ekosistem yang sehat." },
+            { q: "🐇 Dalam rantai makanan: Rumput → Kelinci → Ular → Elang. Kelinci berperan sebagai ....", opts: ["Produsen", "Konsumen I", "Konsumen II", "Pengurai"], ans: 1, msg: "Lompatan super!" },
+            { q: "☀️ Sumber energi utama bagi kehidupan di bumi adalah ....", opts: ["Air", "Angin", "Matahari", "Tanah"], ans: 2, msg: "Katak memperoleh energi matahari!" },
+            { q: "🌳 Makhluk hidup yang dapat membuat makanan sendiri disebut ....", opts: ["Konsumen", "Pengurai", "Produsen", "Predator"], ans: 2, msg: "Katak mendapatkan daun energi." },
+            { q: "♻️ Berikut yang termasuk upaya menjaga lingkungan adalah ....", opts: ["Membuang sampah ke sungai", "Menebang pohon sembarangan", "Membakar sampah plastik", "Menanam pohon"], ans: 3, msg: "Katak menanam bibit pohon!" },
+            { q: "🐛 Hewan yang memakan tumbuhan disebut ....", opts: ["Karnivora", "Herbivora", "Omnivora", "Predator"], ans: 1, msg: "Katak bertemu ulat pemakan daun." },
+            { q: "🌧️ Air hujan yang turun ke bumi merupakan bagian dari ....", opts: ["Daur hidup", "Daur air", "Daur makanan", "Daur energi"], ans: 1, msg: "Katak mendapat percikan air segar." },
+            { q: "🦅 Jika jumlah ular berkurang dalam rantai makanan, kemungkinan yang terjadi adalah ....", opts: ["Kelinci bertambah", "Kelinci berkurang", "Rumput habis", "Elang bertambah"], ans: 0, msg: "Lompatan cerdas!" },
+            { q: "🌍 Salah satu penyebab pemanasan global adalah ....", opts: ["Menanam pohon", "Menghemat listrik", "Emisi kendaraan bermotor", "Mendaur ulang sampah"], ans: 2, msg: "Katak berhasil menghindari daerah panas." },
+            { q: "🌿 Organisme yang bertugas menguraikan sisa makhluk hidup adalah ....", opts: ["Produsen", "Konsumen", "Predator", "Pengurai"], ans: 3, msg: "Selamat! Katak berhasil mencapai kolam kehidupan!" }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let players = [];
+        let numPlayers = 1;
+        const totalLevels = 10;
+        let isAudioEnabled = false;
+
+        // --- AUDIO ENGINE (Web Audio API) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        let bgmOsc = null;
+
+        function playSound(type) {
+            if (!isAudioEnabled) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+            
+            if (type === 'jump') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'correct') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.setValueAtTime(800, now + 0.1);
+                osc.frequency.setValueAtTime(1000, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.4);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'splash') {
+                // Noise buffer for splash
+                const bufferSize = audioCtx.sampleRate * 0.5; // 0.5 sec
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const noiseFilter = audioCtx.createBiquadFilter();
+                noiseFilter.type = 'lowpass';
+                noiseFilter.frequency.value = 1000;
+                const noiseGain = audioCtx.createGain();
+                noiseGain.gain.setValueAtTime(0.3, now);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(audioCtx.destination);
+                noise.start(now);
+            }
+        }
+
+        function toggleBGM() {
+            isAudioEnabled = !isAudioEnabled;
+            document.getElementById('btn-audio').innerText = isAudioEnabled ? '🎵' : '🔇';
+            if (isAudioEnabled) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                // Simple repeating nature chord
+                bgmOsc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                bgmOsc.type = 'sine';
+                bgmOsc.frequency.value = 200; // Low hum
+                gain.gain.value = 0.05;
+                bgmOsc.connect(gain);
+                gain.connect(audioCtx.destination);
+                bgmOsc.start();
+            } else {
+                if (bgmOsc) { bgmOsc.stop(); bgmOsc = null; }
+            }
+        }
+
+        document.getElementById('btn-audio').addEventListener('click', toggleBGM);
+
+        // --- FULLSCREEN LOGIC ---
+        document.getElementById('btn-fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        });
+
+        // --- HOME LOGIC ---
+        document.getElementById('btn-home').addEventListener('click', goToHome);
+        function goToHome() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('main-menu').classList.add('active');
+        }
+
+        // --- CORE GAME LOGIC ---
+        function startGame(modes) {
+            numPlayers = modes;
+            players = [];
+            const container = document.getElementById('game-container');
+            container.innerHTML = ''; // Clear previous
+
+            for (let i = 0; i < numPlayers; i++) {
+                players.push({
+                    id: i,
+                    name: `Player ${i+1}`,
+                    score: 0,
+                    level: 1,
+                    correct: 0,
+                    wrong: 0,
+                    combo: 0,
+                    finished: false
+                });
+                
+                // Build HTML for player column
+                const col = document.createElement('div');
+                col.className = 'player-area';
+                col.id = `player-col-${i}`;
+                
+                col.innerHTML = `
+                    <div class="weather-overlay"></div>
+                    <!-- Decor -->
+                    <div class="env-decor cloud" style="left: 10%">${svgs.cloud}</div>
+                    <div class="env-decor cloud" style="left: 60%; animation-delay: -5s;">${svgs.cloud}</div>
+                    <div class="env-decor tree">${svgs.tree}</div>
+                    <div class="env-decor grass"></div>
+                    
+                    <!-- HUD -->
+                    <div class="hud">
+                        <div class="hud-top">
+                            <span class="player-name">${players[i].name} | Lv <span id="lvl-${i}">1</span></span>
+                            <span class="score-box">⭐ <span id="score-${i}">0</span></span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="prog-${i}"></div>
+                        </div>
+                    </div>
+
+                    <!-- Play Area -->
+                    <div class="play-area">
+                        <div class="question-box" id="qtext-${i}">Memuat soal...</div>
+                        <div class="leaves-container" id="leaves-${i}">
+                            <!-- Buttons generated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Frog -->
+                    <div class="frog-container" id="frog-box-${i}">
+                        <div id="frog-svg-${i}" class="frog-svg">${svgs.frogNormal}</div>
+                    </div>
+                    
+                    <!-- Message Toast -->
+                    <div class="message-toast" id="msg-${i}"></div>
+                `;
+                container.appendChild(col);
+            }
+
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            container.classList.add('active');
+            document.getElementById('end-cards-container').innerHTML = ''; // Reset end screen
+
+            // Initialize first questions
+            players.forEach(p => loadQuestion(p.id));
+        }
+
+        function loadQuestion(playerId) {
+            const p = players[playerId];
+            if (p.finished) return;
+
+            const qIndex = p.level - 1;
+            if (qIndex >= totalLevels) {
+                p.finished = true;
+                checkAllFinished();
+                return;
+            }
+
+            const qData = questionsData[qIndex];
+            document.getElementById(`qtext-${playerId}`).innerText = qData.q;
+            
+            // Update HUD
+            document.getElementById(`lvl-${playerId}`).innerText = p.level;
+            document.getElementById(`prog-${playerId}`).style.width = `${((p.level-1)/totalLevels)*100}%`;
+            document.getElementById(`score-${playerId}`).innerText = p.score;
+
+            // Reset Frog
+            const frogBox = document.getElementById(`frog-box-${playerId}`);
+            const frogSvg = document.getElementById(`frog-svg-${playerId}`);
+            frogBox.style.transform = 'translateY(0)';
+            frogBox.classList.remove('jump-anim', 'fall-anim');
+            frogSvg.innerHTML = svgs.frogNormal;
+            
+            // Remove weather
+            document.getElementById(`player-col-${playerId}`).classList.remove('raining');
+            document.getElementById(`msg-${playerId}`).classList.remove('show');
+
+            // Generate Leaves
+            const leavesContainer = document.getElementById(`leaves-${playerId}`);
+            leavesContainer.innerHTML = '';
+            
+            qData.opts.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'leaf-btn';
+                btn.innerHTML = `
+                    <div class="leaf-svg">${svgs.leaf}</div>
+                    <div class="leaf-text">${String.fromCharCode(65+idx)}. ${opt}</div>
+                `;
+                btn.onclick = () => handleAnswer(playerId, idx);
+                leavesContainer.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(playerId, selectedIdx) {
+            const p = players[playerId];
+            const qData = questionsData[p.level - 1];
+            
+            // Lock buttons
+            const leaves = document.getElementById(`leaves-${playerId}`).querySelectorAll('button');
+            leaves.forEach(btn => btn.disabled = true);
+
+            const isCorrect = selectedIdx === qData.ans;
+            
+            if (isCorrect) {
+                // Correct logic
+                p.combo++;
+                let points = 10 + (p.combo > 1 ? 5 : 0);
+                p.score += points;
+                p.correct++;
+                
+                playSound('jump');
+                setTimeout(() => playSound('correct'), 300);
+
+                // Animate Frog
+                const frogBox = document.getElementById(`frog-box-${playerId}`);
+                const frogSvg = document.getElementById(`frog-svg-${playerId}`);
+                frogSvg.innerHTML = svgs.frogHappy;
+                frogBox.classList.add('jump-anim');
+
+                // Effects
+                createParticles(playerId, 'heart', leaves[selectedIdx]);
+                
+                // Message
+                showMessage(playerId, qData.msg, 'var(--primary-dark)');
+
+            } else {
+                // Wrong logic
+                p.combo = 0;
+                p.wrong++;
+                
+                playSound('wrong');
+                setTimeout(() => playSound('splash'), 600);
+
+                // Animate Frog
+                const frogBox = document.getElementById(`frog-box-${playerId}`);
+                const frogSvg = document.getElementById(`frog-svg-${playerId}`);
+                frogSvg.innerHTML = svgs.frogSad;
+                frogBox.classList.add('fall-anim');
+
+                // Rain Effect
+                const col = document.getElementById(`player-col-${playerId}`);
+                col.classList.add('raining');
+                createRain(col);
+                
+                showMessage(playerId, "Yah, kataknya jatuh! Ayo coba soal berikutnya.", 'var(--danger)');
+            }
+
+            // Next Level after delay
+            setTimeout(() => {
+                p.level++;
+                loadQuestion(playerId);
+            }, 2000);
+        }
+
+        function showMessage(playerId, text, color) {
+            const msgEl = document.getElementById(`msg-${playerId}`);
+            msgEl.innerText = text;
+            msgEl.style.color = color;
+            msgEl.classList.add('show');
+        }
+
+        // --- PARTICLE EFFECTS ---
+        function createParticles(playerId, type, targetEl) {
+            const col = document.getElementById(`player-col-${playerId}`);
+            const rect = targetEl.getBoundingClientRect();
+            const colRect = col.getBoundingClientRect();
+            
+            for(let i=0; i<5; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerHTML = type === 'heart' ? '💖' : '⭐';
+                p.style.left = `${(rect.left - colRect.left) + rect.width/2 + (Math.random()*40-20)}px`;
+                p.style.top = `${(rect.top - colRect.top) + rect.height/2}px`;
+                p.style.fontSize = '24px';
+                p.style.transition = 'all 1s ease-out';
+                col.appendChild(p);
+                
+                setTimeout(() => {
+                    p.style.transform = `translate(${Math.random()*100-50}px, -100px) rotate(${Math.random()*360}deg)`;
+                    p.style.opacity = '0';
+                }, 50);
+                
+                setTimeout(() => p.remove(), 1000);
+            }
+        }
+
+        function createRain(colEl) {
+            for(let i=0; i<20; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'particle';
+                drop.style.width = '2px';
+                drop.style.height = '15px';
+                drop.style.background = '#fff';
+                drop.style.left = `${Math.random()*100}%`;
+                drop.style.top = '-20px';
+                drop.style.opacity = '0.6';
+                const duration = Math.random()*0.5 + 0.5;
+                drop.style.transition = `top ${duration}s linear`;
+                colEl.appendChild(drop);
+                
+                setTimeout(() => { drop.style.top = '100%'; }, 50);
+                setTimeout(() => drop.remove(), duration * 1000);
+            }
+        }
+
+        // --- END GAME ---
+        function checkAllFinished() {
+            if (players.every(p => p.finished)) {
+                setTimeout(showEndScreen, 1000);
+            }
+        }
+
+        function showEndScreen() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('end-screen').classList.add('active');
+            
+            const container = document.getElementById('end-cards-container');
+            container.innerHTML = '';
+
+            players.forEach((p, idx) => {
+                const card = document.createElement('div');
+                card.className = 'end-player-card';
+                card.style.animationDelay = `${idx * 0.2}s`;
+                card.innerHTML = `
+                    <h2>🏆 ${p.name}</h2>
+                    <div style="font-size: 3rem; margin:-10px 0;">🐸</div>
+                    <h3>Skor Akhir</h3>
+                    <h1 style="color:var(--primary-dark); font-size:3rem; margin:0;">${p.score}</h1>
+                    <div class="stat-row"><span>Jawaban Benar</span> <span style="color:var(--primary)">✅ ${p.correct}</span></div>
+                    <div class="stat-row"><span>Jawaban Salah</span> <span style="color:var(--danger)">❌ ${p.wrong}</span></div>
+                `;
+                container.appendChild(card);
+            });
+            
+            fireConfetti();
+        }
+
+        function fireConfetti() {
+            const endScreen = document.getElementById('end-screen');
+            const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
+            
+            for(let i=0; i<100; i++) {
+                const c = document.createElement('div');
+                c.style.position = 'absolute';
+                c.style.width = '10px';
+                c.style.height = '10px';
+                c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                c.style.left = '50%';
+                c.style.top = '100%';
+                c.style.zIndex = '5';
+                c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 50 + Math.random() * 50;
+                const tx = Math.cos(angle) * velocity * 10;
+                const ty = Math.sin(angle) * velocity * 10 - 500;
+                
+                c.style.transition = `transform 2s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 2s ease`;
+                endScreen.appendChild(c);
+                
+                setTimeout(() => {
+                    c.style.transform = `translate(${tx}px, ${ty}px) rotate(${Math.random()*720}deg)`;
+                    c.style.opacity = '0';
+                }, 50);
+                
+                setTimeout(() => c.remove(), 2050);
+            }
+        }
+    </script>
+</body>
+</html>
